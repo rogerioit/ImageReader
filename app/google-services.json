@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "899446974005",
+    "firebase_url": "https://imagereader-95738.firebaseio.com",
+    "project_id": "imagereader-95738",
+    "storage_bucket": "imagereader-95738.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899446974005:android:717c050783ee176a",
+        "android_client_info": {
+          "package_name": "com.rion.imagereader"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899446974005-pjseb7ag8rujir6in86pnarvp1375vip.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaKTzdU5p_bWGbTr3TGfkoqnik84s-DtA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
