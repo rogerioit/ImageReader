@@ -4,7 +4,7 @@ apply plugin: 'android-apt'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    buildToolsVersion "24.0.3"
 
     defaultConfig {
         applicationId "com.rion.imagereader"
@@ -36,7 +36,7 @@ dependencies {
     apt "com.google.dagger:dagger-compiler:${daggerVersion}"
 
     // Important - the CameraSource implementation in this project requires version 8.1 or higher.
-    compile 'com.google.android.gms:play-services-vision:9.4.0'
+    compile 'com.google.android.gms:play-services-vision:9.6.1'
 
     //Apache Commons-lang - if necessary
     //compile "org.apache.commons:commons-lang3:3.4"
