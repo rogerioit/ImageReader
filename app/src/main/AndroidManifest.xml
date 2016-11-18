@@ -3,7 +3,8 @@
     package="com.rion.imagereader">
 
     <application
-        android:allowBackup="true"
+        android:name=".application.AndroidApplication"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
