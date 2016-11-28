@@ -11,6 +11,8 @@ import android.support.v7.widget.Toolbar;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.text.TextRecognizer;
 import com.rion.imagereader.application.AndroidApplication;
+import com.rion.imagereader.di.component.OcrComponent;
+import com.rion.imagereader.di.module.GoogleVisionModule;
 
 import javax.inject.Inject;
 
@@ -25,13 +27,14 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_PERMISSION_CAMERA = 1001;
 
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
+    @BindView(R.id.toolbar) Toolbar toolbar;
 
     @Inject
     TextRecognizer textRecognizer;
+
     @Inject
     CameraSource cameraSource;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,12 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         ((AndroidApplication) getApplication()).getComponent().inject(this);
+
+        OcrComponent ocrComponent = DaggerOcrComponent.builder()
+                .googleVisionModule(new GoogleVisionModule(this))
+                .build();
+
+        ocrComponent.inject(this);
 
         setSupportActionBar(toolbar);
     }

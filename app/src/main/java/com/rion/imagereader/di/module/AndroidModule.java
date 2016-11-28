@@ -1,9 +1,9 @@
-package com.rion.imagereader.module;
+package com.rion.imagereader.di.module;
 
 import android.content.Context;
 
-import com.rion.imagereader.ForApplication;
 import com.rion.imagereader.application.AndroidApplication;
+import com.rion.imagereader.di.ForApplication;
 
 import javax.inject.Singleton;
 
@@ -16,6 +16,7 @@ import dagger.Provides;
  */
 @Module
 public class AndroidModule {
+
     private final AndroidApplication application;
 
     public AndroidModule(AndroidApplication application) {

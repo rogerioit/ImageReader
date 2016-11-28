@@ -3,8 +3,7 @@ package com.rion.imagereader.application;
 import android.app.Application;
 
 import com.rion.imagereader.MainActivity;
-import com.rion.imagereader.module.AndroidModule;
-import com.rion.imagereader.module.GoogleVisionCameraSourceModule;
+import com.rion.imagereader.di.module.AndroidModule;
 
 import javax.inject.Singleton;
 
@@ -18,8 +17,7 @@ public class AndroidApplication extends Application {
 
     @Singleton
     @Component(modules = {
-            AndroidModule.class,
-            GoogleVisionCameraSourceModule.class
+            AndroidModule.class
     })
     public interface ApplicationComponent {
         void inject(AndroidApplication androidApplication);

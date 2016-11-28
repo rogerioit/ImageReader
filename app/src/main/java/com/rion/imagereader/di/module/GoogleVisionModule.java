@@ -1,24 +1,33 @@
-package com.rion.imagereader.module;
+package com.rion.imagereader.di.module;
 
 import android.content.Context;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.text.TextRecognizer;
 
-import javax.inject.Inject;
-
 import dagger.Module;
+import dagger.Provides;
 
 /**
- * Criado por rogerio.junior em 18/11/2016.
+ * Criado por rogerio.junior em 28/11/2016.
  */
 @Module
-public class GoogleVisionCameraSourceModule {
+public class GoogleVisionModule {
 
-    @Inject protected Context context;
+    private final Context context;
+    private final TextRecognizer textRecognizer;
 
-    @Inject protected TextRecognizer textRecognizer;
+    public GoogleVisionModule(Context context) {
+        this.context = context;
+        this.textRecognizer = new TextRecognizer.Builder(context).build();
+    }
 
+    @Provides
+    public TextRecognizer provideTextRecognizer() {
+        return textRecognizer;
+    }
+
+    @Provides
     public CameraSource provideCameraSource(boolean autoFocus) {
         return new CameraSource.Builder(context, textRecognizer)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)

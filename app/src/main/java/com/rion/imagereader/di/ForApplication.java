@@ -1,4 +1,4 @@
-package com.rion.imagereader;
+package com.rion.imagereader.di;
 
 import java.lang.annotation.Retention;
 
