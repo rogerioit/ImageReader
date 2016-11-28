@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.rion.imagereader.MainActivity;
 import com.rion.imagereader.module.AndroidModule;
+import com.rion.imagereader.module.GoogleVisionCameraSourceModule;
 
 import javax.inject.Singleton;
 
@@ -16,7 +17,10 @@ import dagger.Component;
 public class AndroidApplication extends Application {
 
     @Singleton
-    @Component(modules = AndroidModule.class)
+    @Component(modules = {
+            AndroidModule.class,
+            GoogleVisionCameraSourceModule.class
+    })
     public interface ApplicationComponent {
         void inject(AndroidApplication androidApplication);
         void inject(MainActivity mainActivity);

@@ -10,15 +10,15 @@ import dagger.Module;
 import dagger.Provides;
 
 /**
- * Criado por rogerio.junior em 18/11/2016.
+ * Criado por rogerio.junior em 28/11/2016.
  */
 @Module
-public class GoogleVisionModule {
+public class GoogleVisionTextRecognizerModule {
 
     @Inject protected Context context;
 
     @Provides
-    public TextRecognizer providesTextRecognizer() {
+    public TextRecognizer provideTextRecognizer() {
         return new TextRecognizer.Builder(context).build();
     }
 }
