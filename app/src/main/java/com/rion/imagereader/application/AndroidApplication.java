@@ -2,7 +2,6 @@ package com.rion.imagereader.application;
 
 import android.app.Application;
 
-import com.rion.imagereader.MainActivity;
 import com.rion.imagereader.di.module.AndroidModule;
 
 import javax.inject.Singleton;
@@ -21,7 +20,6 @@ public class AndroidApplication extends Application {
     })
     public interface ApplicationComponent {
         void inject(AndroidApplication androidApplication);
-        void inject(MainActivity mainActivity);
     }
 
     private ApplicationComponent component;

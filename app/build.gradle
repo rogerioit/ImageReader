@@ -22,7 +22,7 @@ android {
     }
 }
 
-def googlePlayServicesVersion = "10.0.0"
+def googlePlayServicesVersion = "10.0.1"
 def androidToolsVersion = "25.0.1"
 def daggerVersion = "2.7"
 def butterKnifeVersion = "8.4.0"

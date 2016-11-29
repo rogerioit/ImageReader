@@ -28,12 +28,12 @@ public class GoogleVisionModule {
     }
 
     @Provides
-    public CameraSource provideCameraSource(boolean autoFocus) {
+    public CameraSource provideCameraSource() {
         return new CameraSource.Builder(context, textRecognizer)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
                 .setRequestedPreviewSize(1280, 1024)
                 .setRequestedFps(15.0f)
-                .setAutoFocusEnabled(autoFocus)
+                .setAutoFocusEnabled(true)
                 .build();
     }
 }
