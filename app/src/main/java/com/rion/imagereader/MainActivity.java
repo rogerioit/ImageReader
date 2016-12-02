@@ -60,31 +60,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         Intent intent = new Intent(this, OcrCaptureActivity.class);
 
         startActivityForResult(intent, RC_OCR_CAPTURE);
-
-        /*
-
-        Snackbar.make(floatingActionButton, textRecognizer.isOperational() ? "Operacional" : "Não operacional", Snackbar.LENGTH_LONG).show();
-
-        if (!textRecognizer.isOperational()) {
-            Log.w(TAG, "Detector dependencies are not yet available.");
-
-            // Check for low storage.  If there is low storage, the native library will not be
-            // downloaded, so detection will not become operational.
-            IntentFilter lowstorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
-            boolean hasLowStorage = registerReceiver(null, lowstorageFilter) != null;
-
-            if (hasLowStorage) {
-                Snackbar.make(floatingActionButton, getString(R.string.low_storage_error), 10000).show();
-                Log.w(TAG, getString(R.string.low_storage_error));
-            }
-        }
-
-        if(EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
-            callOcr();
-        } else {
-            EasyPermissions.requestPermissions(this, getString(R.string.rationale_camera), REQUEST_CODE_PERMISSION_CAMERA, Manifest.permission.CAMERA);
-        }
-        */
     }
 
     /**
