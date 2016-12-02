@@ -1,39 +1,40 @@
 package com.rion.imagereader;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.widget.TextView;
 
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.text.TextRecognizer;
-import com.rion.imagereader.di.component.DaggerOcrComponent;
-import com.rion.imagereader.di.component.OcrComponent;
 import com.rion.imagereader.di.module.GoogleVisionModule;
+import com.rion.imagereader.ocr.OcrCaptureActivity;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final String TAG = MainActivity.class.getName();
 
-    private static final int REQUEST_CODE_PERMISSION_CAMERA = 1001;
+    private static final int RC_OCR_CAPTURE = 9999;
 
     @BindView(R.id.toolbar) Toolbar toolbar;
+
+	@BindView(R.id.status_message)
+	TextView statusMessage;
+
+	@BindView(R.id.text_value)
+	TextView textValue;
+
     @BindView(R.id.fab) FloatingActionButton floatingActionButton;
 
     @Inject
@@ -50,25 +51,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         ButterKnife.bind(this);
 
-        OcrComponent ocrComponent = DaggerOcrComponent.builder()
-                .googleVisionModule(new GoogleVisionModule(this))
-                .build();
-
-        ocrComponent.inject(this);
-
         setSupportActionBar(toolbar);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        // Forward results to EasyPermissions
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     @OnClick(R.id.fab)
     public void buttonClickCamera() {
+
+        Intent intent = new Intent(this, OcrCaptureActivity.class);
+
+        startActivityForResult(intent, RC_OCR_CAPTURE);
+
+        /*
 
         Snackbar.make(floatingActionButton, textRecognizer.isOperational() ? "Operacional" : "Não operacional", Snackbar.LENGTH_LONG).show();
 
@@ -91,19 +84,51 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         } else {
             EasyPermissions.requestPermissions(this, getString(R.string.rationale_camera), REQUEST_CODE_PERMISSION_CAMERA, Manifest.permission.CAMERA);
         }
+        */
     }
 
-    @AfterPermissionGranted(REQUEST_CODE_PERMISSION_CAMERA)
-    private void callOcr() {
-
-        try {
-            //todo set Processor
-            //@see <https://codelabs.developers.google.com/codelabs/mobile-vision-ocr/index.html?index=..%2F..%2Findex#5>
-            if(cameraSource != null && ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PermissionChecker.PERMISSION_GRANTED) {
-                cameraSource.start();
+    /**
+     * Called when an activity you launched exits, giving you the requestCode
+     * you started it with, the resultCode it returned, and any additional
+     * data from it.  The <var>resultCode</var> will be
+     * {@link #RESULT_CANCELED} if the activity explicitly returned that,
+     * didn't return any result, or crashed during its operation.
+     * <p/>
+     * <p>You will receive this call immediately before onResume() when your
+     * activity is re-starting.
+     * <p/>
+     *
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode  The integer result code returned by the child activity
+     *                    through its setResult().
+     * @param data        An Intent, which can return result data to the caller
+     *                    (various data can be attached to Intent "extras").
+     * @see #startActivityForResult
+     * @see #createPendingResult
+     * @see #setResult(int)
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == RC_OCR_CAPTURE) {
+            if (resultCode == CommonStatusCodes.SUCCESS) {
+                if (data != null) {
+                    String text = data.getStringExtra(GoogleVisionModule.EXTRA_OCR_DATA_RESULT);
+                    statusMessage.setText(R.string.ocr_success);
+                    textValue.setText(text);
+                    Log.d(TAG, "Text read: " + text);
+                } else {
+                    statusMessage.setText(R.string.ocr_failure);
+                    Log.d(TAG, "No Text captured, intent data is null");
+                }
+            } else {
+                statusMessage.setText(String.format(getString(R.string.ocr_error),
+                        CommonStatusCodes.getStatusCodeString(resultCode)));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 }

@@ -4,4 +4,8 @@
     <string name="action_settings">Settings</string>
     <string name="rationale_camera">Para utilização do leitor, é necessário ter acesso à câmera.</string>
     <string name="low_storage_error">Não foi possível carregar o OCR por falta de espaço para armazenamento</string>
+    <string name="ocr_header">Leitor OCR com Dagger 2 :)</string>
+    <string name="ocr_success">Leitura OCR com sucesso</string>
+    <string name="ocr_failure">Não foi possível buscar o valor via OCR</string>
+    <string name="ocr_error">Erro do OCR. Operação falhou.Código: %s</string>
 </resources>
