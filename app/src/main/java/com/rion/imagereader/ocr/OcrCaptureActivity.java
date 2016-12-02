@@ -16,12 +16,9 @@
 package com.rion.imagereader.ocr;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -70,14 +67,12 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     // Permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
 
-    private CameraSource mCameraSource;
+    @BindView(R.id.preview) CameraSourcePreview mPreview;
+    @BindView(R.id.graphicOverlay) GraphicOverlay<OcrGraphic> mGraphicOverlay;
 
-    @BindView(R.id.preview) private CameraSourcePreview mPreview;
-    @BindView(R.id.graphicOverlay) private GraphicOverlay<OcrGraphic> mGraphicOverlay;
-
-    @Inject TextRecognizer textRecognizer;
-    @Inject CameraSource cameraSource;
-	@Inject Detector.Processor<TextBlock> textBlockProcessor;
+    @Inject TextRecognizer mTextRecognizer;
+    @Inject CameraSource mCameraSource;
+	@Inject Detector.Processor<TextBlock> mTextBlockProcessor;
 
 	// Helper objects for detecting taps and pinches.
 	@Inject GestureDetector gestureDetector;
@@ -102,7 +97,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
         ocrComponent.inject(this);
 
 		if(EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
-			callOcr();
+			prepareOcr();
 		} else {
 			EasyPermissions.requestPermissions(this, getString(R.string.rationale_camera), RC_HANDLE_CAMERA_PERM, Manifest.permission.CAMERA);
 		}
@@ -111,14 +106,56 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     }
 
 	@AfterPermissionGranted(RC_HANDLE_CAMERA_PERM)
-	private void callOcr() {
+	private void prepareOcr() {
 
-		try {
-			if(cameraSource != null && ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PermissionChecker.PERMISSION_GRANTED) {
-				cameraSource.start();
+		// A text recognizer is created to find text.  An associated processor instance
+		// is set to receive the text recognition results and display graphics for each text block
+		// on screen.
+		mTextRecognizer.setProcessor(mTextBlockProcessor);
+
+		if (!mTextRecognizer.isOperational()) {
+			// Note: The first time that an app using a Vision API is installed on a
+			// device, GMS will download a native libraries to the device in order to do detection.
+			// Usually this completes before the app is run for the first time.  But if that
+			// download has not yet completed, then the above call will not detect any text,
+			// barcodes, or faces.
+			//
+			// isOperational() can be used to check if the required native libraries are currently
+			// available.  The detectors will automatically become operational once the library
+			// downloads complete on device.
+			Log.w(TAG, "Detector dependencies are not yet available.");
+
+			// Check for low storage.  If there is low storage, the native library will not be
+			// downloaded, so detection will not become operational.
+			IntentFilter lowstorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
+			boolean hasLowStorage = registerReceiver(null, lowstorageFilter) != null;
+
+			if (hasLowStorage) {
+				Toast.makeText(this, R.string.low_storage_error, Toast.LENGTH_LONG).show();
+				Log.w(TAG, getString(R.string.low_storage_error));
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		}
+	}
+
+	private void startOcr() {
+
+		// Check that the device has play services available.
+		int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+				getApplicationContext());
+		if (code != ConnectionResult.SUCCESS) {
+			Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
+			dlg.show();
+		}
+
+		if(mCameraSource != null && ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PermissionChecker.PERMISSION_GRANTED) {
+			try {
+				mPreview.start(mCameraSource, mGraphicOverlay);
+
+			} catch (IOException e) {
+				Log.e(TAG, "Unable to start camera source.", e);
+				mCameraSource.release();
+				mCameraSource = null;
+			}
 		}
 	}
 
@@ -140,64 +177,12 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     }
 
     /**
-     * Creates and starts the camera.  Note that this uses a higher resolution in comparison
-     * to other detection examples to enable the ocr detector to detect small text samples
-     * at long distances.
-     *
-     * Suppressing InlinedApi since there is a check that the minimum version is met before using
-     * the constant.
-     */
-    @SuppressLint("InlinedApi")
-    private void createCameraSource(boolean autoFocus, boolean useFlash) {
-        Context context = getApplicationContext();
-
-        // A text recognizer is created to find text.  An associated processor instance
-        // is set to receive the text recognition results and display graphics for each text block
-        // on screen.
-        textRecognizer.setProcessor(new OcrDetectorProcessor(mGraphicOverlay));
-
-        if (!textRecognizer.isOperational()) {
-            // Note: The first time that an app using a Vision API is installed on a
-            // device, GMS will download a native libraries to the device in order to do detection.
-            // Usually this completes before the app is run for the first time.  But if that
-            // download has not yet completed, then the above call will not detect any text,
-            // barcodes, or faces.
-            //
-            // isOperational() can be used to check if the required native libraries are currently
-            // available.  The detectors will automatically become operational once the library
-            // downloads complete on device.
-            Log.w(TAG, "Detector dependencies are not yet available.");
-
-            // Check for low storage.  If there is low storage, the native library will not be
-            // downloaded, so detection will not become operational.
-            IntentFilter lowstorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
-            boolean hasLowStorage = registerReceiver(null, lowstorageFilter) != null;
-
-            if (hasLowStorage) {
-                Toast.makeText(this, R.string.low_storage_error, Toast.LENGTH_LONG).show();
-                Log.w(TAG, getString(R.string.low_storage_error));
-            }
-        }
-
-        // Creates and starts the camera.  Note that this uses a higher resolution in comparison
-        // to other detection examples to enable the text recognizer to detect small pieces of text.
-        mCameraSource =
-                new CameraSource.Builder(getApplicationContext(), textRecognizer)
-                .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(1280, 1024)
-                .setRequestedFps(2.0f)
-                .setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null)
-                .setFocusMode(autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null)
-                .build();
-    }
-
-    /**
      * Restarts the camera.
      */
     @Override
     protected void onResume() {
         super.onResume();
-        startCameraSource();
+        startOcr();
     }
 
     /**
@@ -220,32 +205,6 @@ public final class OcrCaptureActivity extends AppCompatActivity {
         super.onDestroy();
         if (mPreview != null) {
             mPreview.release();
-        }
-    }
-
-    /**
-     * Starts or restarts the camera source, if it exists.  If the camera source doesn't exist yet
-     * (e.g., because onResume was called before the camera source was created), this will be called
-     * again when the camera source is created.
-     */
-    private void startCameraSource() throws SecurityException {
-        // Check that the device has play services available.
-        int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-                getApplicationContext());
-        if (code != ConnectionResult.SUCCESS) {
-            Dialog dlg =
-                    GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
-            dlg.show();
-        }
-
-        if (mCameraSource != null) {
-            try {
-                mPreview.start(mCameraSource, mGraphicOverlay);
-            } catch (IOException e) {
-                Log.e(TAG, "Unable to start camera source.", e);
-                mCameraSource.release();
-                mCameraSource = null;
-            }
         }
     }
 }
